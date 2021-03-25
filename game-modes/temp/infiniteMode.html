@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Math Legend: Infinite Mode</title>
+    </head>
+    <body>
+        <script type="text/javascript" src="infiniteMode.js"></script>
+        <div class="container">
+            <!--
+                TODO: set style in CSS?
+            -->
+            <div id = "score" style = "visibility: hidden"></div>
+            <div id = "lives" style = "visibility: hidden"></div>
+            <div id="timer" style = "visibility: hidden"></div>
+            <div id = "question" style = "visibility: hidden"></div>
+            <input type="text" id="answer" style = "visibility: hidden">
+            <div id = "go" style = "visibility: hidden"><input type="button" value="Go!" onclick="answer()"></div>
+            <div id = "feedback" style = "visibility: hidden"></div>
+            <div id = "begin"><input type="button" value="Begin" onclick="beginGame()"></div>
+
+        </div>
+    </body>
+</html>
