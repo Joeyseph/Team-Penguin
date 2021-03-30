@@ -1,3 +1,5 @@
+// TODO: get questionNumber from the database
+let questionNumber = 10;
 let score;
 let lives;
 let time;
@@ -9,31 +11,44 @@ let questionDisplay;
 let answerInput;
 let feedbackDisplay;
 let goButton;
+let hasQuestion;
+let oldQuestions;
+ 
 
-
-// get add/subtract question
-function add_sub()
+// get a question from the database
+function getQuestion()
 {
-    // temporary
-    if (Math.random() < 0.5) {
-        return { question: "15 + 12", answer: 27 };
-    }
-    else {
-        return { question: "8 + 10", answer: 18 };
-    }
-}
+    let dbquestion;
+    let questionID = Math.trunc(Math.random * (questionNumber + 1));
+    let url = "user/getQuestion";
+    hasQuestion = false;
 
+    let data = {
+        "questionID": questionID,	 
+    };
 
-// get places question
-function places()
-{
-    // temporary
-    if (Math.random() < 0.5) {
-        return { question: "150 at the tens place", answer: 5 };
-    }
-    else {
-        return { question: "211 at the hundreds place", answer: 2 };
-    }
+    $.ajax({
+        type:"POST",
+        url:url,
+        async:false,
+        cache:false,
+        data:data,
+        dataType:"json",
+        success: function(data,textStaus,jqXHR){
+            if( data.status == "success"){
+                dbQuestion = { questionId: data.questionId, questionType: data.questionType, questionBody: data.questionBody, answer: data.answer, place: data.place };
+                hasQuestion = true;
+            }
+        },
+
+        error:function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("XMLHttpRequest: "+XMLHttpRequest.status);
+            alert("textStatus: "+textStatus);
+            alert("errorThrown: "+errorThrown);
+        }
+    });
+
+    return dbQuestion;
 }
 
 
@@ -45,13 +60,30 @@ function question()
 
     // randomly choose type of question
     if (Math.random() < 0.5) {
-        questionAnswer = add_sub();
-        questionDisplay.innerHTML = questionAnswer.question + " = ";
+        // add/subtract
+        questionAnswer = getQuestion();
+
+        // repeat until add/sub question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "add.sub" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
+        questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
     }
     else {
-        questionAnswer = places();
-        questionDisplay.innerHTML = questionAnswer.question + " is ";
+        // places
+        questionAnswer = getQuestion();
+
+        // repeat until places question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "places" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
+        questionDisplay.innerHTML = questionAnswer.questionBody + " at the " + questionAnswer.place + " place is ";
     }
+
+    // add question index to old questions
+    oldQuestions.push(questionAnswer.questionId);
 
     questionDisplay.style.visibility = "visible";
     answerInput.style.visibility = "visible";
