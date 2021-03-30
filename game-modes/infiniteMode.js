@@ -36,7 +36,7 @@ function getQuestion()
         dataType:"json",
         success: function(data,textStaus,jqXHR){
             if( data.status == "success"){
-                dbQuestion = { questionId: data.questionId, questionType: data.questionType, questionBody: data.questionBody, answer: data.answer, place: data.place };
+                dbQuestion = { questionId: data.questionId, questionType: data.questionType, questionBody: data.questionBody, answer: data.answer, number: data.number, place: data.place };
                 hasQuestion = true;
             }
         },
@@ -58,28 +58,19 @@ function question()
     goButton.style.visibility = "visible";
     feedbackDisplay.style.visibility = "visible";
 
-    // randomly choose type of question
-    if (Math.random() < 0.5) {
-        // add/subtract
+    // get a question
+    questionAnswer = getQuestion();
+
+    // repeat until add/sub question is returned and it's a new question
+    while (!hasQuestion || oldQuestions.includes(questionAnswer.questionId)) {
         questionAnswer = getQuestion();
+    }
 
-        // repeat until add/sub question is returned and it's a new question
-        while (!hasQuestion || questionAnswer.questionType != "add.sub" || oldQuestions.includes(questionAnswer.questionId)) {
-            questionAnswer = getQuestion();
-        }
-
+    if (questionAnswer.questionType == "add.sub") {
         questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
     }
     else {
-        // places
-        questionAnswer = getQuestion();
-
-        // repeat until places question is returned and it's a new question
-        while (!hasQuestion || questionAnswer.questionType != "places" || oldQuestions.includes(questionAnswer.questionId)) {
-            questionAnswer = getQuestion();
-        }
-
-        questionDisplay.innerHTML = questionAnswer.questionBody + " at the " + questionAnswer.place + " place is ";
+        questionDisplay.innerHTML = questionAnswer.number + " at the " + questionAnswer.place + "s place is ";
     }
 
     // add question index to old questions
