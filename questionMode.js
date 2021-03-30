@@ -9,7 +9,8 @@ let questionDisplay;
 let answerInput;
 let feedbackDisplay;
 let goButton;
-
+let hasQuestion;
+let oldQuestions;
 
 // get add/subtract question
 function add_sub()
@@ -37,23 +38,81 @@ function places()
 }
 
 
+// get a question from the database
+function getQuestion()
+{
+    let dbQuestion;
+    let questionID = Math.trunc(Math.random * (20 + 1));
+     
+    hasQuestion = false;
+
+    var data = {
+        "questionID": 30,	 
+    };
+    let url = "user/getQuestion";
+    $.ajax({
+        type:"POST",
+        url:url,
+        async:false,
+        cache:false,
+        data:data,
+        dataType:"json",
+        success: function(data,textStaus,jqXHR){
+            if( data.status == "success"){
+                dbQuestion = {questionType : data.type, questionBody : data.questionBody, 
+                    answer : data.answer, place : data.place , number:data.number};
+               
+            }
+        },
+
+        error:function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("XMLHttpRequest: "+XMLHttpRequest.status);
+            alert("textStatus: "+textStatus);
+            alert("errorThrown: "+errorThrown);
+        }
+         
+    });
+    alert (dbQuestion.questionBody);
+    return dbQuestion;
+}
+
+
 // get a random question, display it, and get an answer
 function question()
 {   
     remark.style.visibility = "hidden";
     goButton.style.visibility = "visible";
     feedbackDisplay.style.visibility = "hidden";
-
+    /*
     // randomly choose type of question
     if (Math.random() < 0.5) {
-        questionAnswer = add_sub();
-        questionDisplay.innerHTML = questionAnswer.question + " = ";
+        // add/subtract
+        questionAnswer = getQuestion();
+
+        // repeat until add/sub question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "add.sub" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
+        questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
     }
     else {
-        questionAnswer = places();
-        questionDisplay.innerHTML = questionAnswer.question + " is ";
+        // places
+        questionAnswer = getQuestion();
+
+        // repeat until places question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "places" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
+        questionDisplay.innerHTML = questionAnswer.number + " at the " + questionAnswer.place + " place is ";
     }
 
+    // add question index to old questions
+    oldQuestions.push(questionAnswer.questionId);
+*/
+    questionAnswer = getQuestion();
+    alert (questionAnswer.questionBody);
     questionDisplay.style.visibility = "visible";
     answerInput.style.visibility = "visible";
 }
@@ -99,7 +158,7 @@ function answer()
 function beginGame()
 {
     score = 0;
-    left = 5;
+    left = getvalue("arg");
     time = 0;
 
     scoreDisplay = document.getElementById("score");
@@ -159,3 +218,27 @@ function endGame()
     document.getElementById("timer").innerHTML = "Time: " + hour +":"+minute+":"+second+"<br>" +"Score: "+ score;
     document.getElementById("timer").style.visibility = "visible";
 }
+
+//get argument from questionModeSelection.html
+function getvalue(name)
+{
+var str=window.location.search;
+if (str.indexOf(name)!=-1)
+{
+var pos_start=str.indexOf(name)+name.length+1;
+var pos_end=str.indexOf("&",pos_start);
+if (pos_end==-1)
+{
+return str.substring(pos_start);
+}
+else
+{
+return str.substring(pos_start,pos_end)
+}
+}
+else
+{
+return "error";
+}
+}
+ 
