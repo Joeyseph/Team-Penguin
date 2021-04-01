@@ -21,16 +21,11 @@ public static void main(String args[]) throws SQLException {
  private int correctAnswers;
  private int totalQuestions;
  private double percentCorrect;
- private int scores[];
- private double score;
  
  //Constructors
  public Account() {
   firstName = "Temporary";
   lastName = "Temporary";
-  correctAnswers = 0;
-  totalQuestions = 0;
-  percentCorrect = 0.0;
  }
  
  public Account(String newFirstName, String newLastName) throws SQLException {
@@ -51,6 +46,19 @@ public static void main(String args[]) throws SQLException {
    }
  }
  
+	 public void createAccount(String firstName, String lastName){
+   db.addStudent(firstName, lastName);
+   Account user = new Account(firstName, lastName, db.getStudentID());
+ }
+ 
+ public void logIn(String firstName, String lastName){
+   if(db.getStudentID(firstName, lastName) > -1){
+      System.out.println("Log in successful");
+   }
+    else {
+      System.out.println("Account not found, please create account");
+    }
+ }
  
 //Database Methods
 public void addAccount(String first, String last) throws SQLException {
