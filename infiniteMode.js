@@ -9,33 +9,50 @@ let questionDisplay;
 let answerInput;
 let feedbackDisplay;
 let goButton;
+let hasQuestion;
+let oldQuestions =[];
+let backButton;
  
 
-// get add/subtract question
-function add_sub()
+
+// get a question from the database
+function getQuestion()
 {
-    // temporary
-    if (Math.random() < 0.5) {
-        return { question: "15 + 12", answer: 27 };
-    }
-    else {
-        return { question: "8 + 10", answer: 18 };
-    }
+    let dbQuestion;
+    let questionID = Math.trunc(Math.random()* (20 + 1));
+    hasQuestion = false;
+
+    var data = {
+        "questionID": questionID,	 
+    };
+    let url = "user/getQuestion";
+    $.ajax({
+        type:"POST",
+        url:url,
+        async:false,
+        cache:false,
+        data:data,
+        dataType:"json",
+        success: function(data,textStaus,jqXHR){
+            if( data.status == "success"){
+                dbQuestion = {questionType : data.type, questionBody : data.questionBody, 
+                    answer : data.answer, place : data.place , number:data.number, questionID:questionID}; 
+                    hasQuestion = true;
+            }
+        },
+
+        error:function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("XMLHttpRequest: "+XMLHttpRequest.status);
+            alert("textStatus: "+textStatus);
+            alert("errorThrown: "+errorThrown);
+        }
+         
+    });
+    //alert (dbQuestion.questionBody);
+    return dbQuestion;
 }
 
-
-// get places question
-function places()
-{
-    // temporary
-    if (Math.random() < 0.5) {
-        return { question: "150 at the tens place", answer: 5 };
-    }
-    else {
-        return { question: "211 at the hundreds place", answer: 2 };
-    }
-}
-
+ 
 
 // get a random question, display it, and get an answer
 function question()
@@ -43,20 +60,30 @@ function question()
     remark.style.visibility = "hidden";
     goButton.style.visibility = "visible";
     feedbackDisplay.style.visibility = "hidden";
+    
+    // get a question
+    questionAnswer = getQuestion();
 
-    // randomly choose type of question
-    if (Math.random() < 0.5) {
-        questionAnswer = add_sub();
-        questionDisplay.innerHTML = questionAnswer.question + " = ";
+    // repeat until add/sub question is returned and it's a new question
+    while (!hasQuestion || oldQuestions.includes(questionAnswer.questionID)) {
+        questionAnswer = getQuestion();
+    }
+
+    if (questionAnswer.questionType == "add.sub") {
+        questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
     }
     else {
-        questionAnswer = places();
-        questionDisplay.innerHTML = questionAnswer.question + " is ";
+        questionDisplay.innerHTML = Math.trunc(questionAnswer.number) + " at the " + questionAnswer.place + " place is ";
     }
 
+    // add question index to old questions
+    oldQuestions.push(questionAnswer.questionID);
+     
+    //alert (questionAnswer.questionBody);
     questionDisplay.style.visibility = "visible";
     answerInput.style.visibility = "visible";
 }
+
 
 
 // set "score" and "lives" display values
@@ -70,16 +97,16 @@ function setDisplay()
 // check answer from user
 function answer()
 {
-    if (questionAnswer.answer == inputValue.value) {
+    if (Math.trunc(questionAnswer.answer) == Math.trunc(inputValue.value)) {
         feedbackDisplay.innerHTML = "Correct! <br> Great job!";
         score += 1;
     }
     else {
-        feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.answer + ".";
-        lives-=1;
+        feedbackDisplay.innerHTML = "Sorry, the correct answer was " + Math.trunc(questionAnswer.answer) + ".";
+        lives -= 1;
     }
 
-    
+     
 
     inputValue.value = '';
     setDisplay();
@@ -110,7 +137,7 @@ function beginGame()
     feedbackDisplay = document.getElementById("feedback");
     goButton = document.getElementById("go");
     remark = document.getElementById("remark");
-
+    backButton = document.getElementById("back");
      
     document.getElementById("begin").style.display = "none";
     scoreDisplay.style.visibility = "visible";
@@ -159,4 +186,9 @@ function endGame()
 
     document.getElementById("timer").innerHTML = "Time: " + hour +":"+minute+":"+second+"<br>" +"Score: "+ score;
     document.getElementById("timer").style.visibility = "visible";
+    backButton.style.visibility = "visible";
 }
+
+ function back() {
+    window.history.back(-1);
+  }
