@@ -13,7 +13,47 @@ let feedbackDisplay;
 let goButton;
 let hasQuestion;
 let oldQuestions;
+let date;
 
+// get the date
+function getDate(){
+var year = new Date();
+year.getFullYear();
+var month = new Date();
+month.getMonth();
+var day = new Date();
+day.getDate();
+var date = year + "-" + month + "-" + day;
+ return date
+}
+
+
+// save the score, total questions, and the date to the database
+function addScore() {
+var data = {
+		"score":score,
+    "totalQuestions":totalQuestions,
+    "date":date,
+};
+var url = "user/scores"
+
+$.ajax({
+	 type:"POST",
+        url:url,
+        async:false,
+        cache:false,
+        data:data,
+        dataType:"json",
+        success: function(data, textStatus, JqXHR){
+				},
+        
+			 error:function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("XMLHttpRequest: "+XMLHttpRequest.status);
+            alert("textStatus: "+textStatus);
+            alert("errorThrown: "+errorThrown);
+        }
+	});
+}
 
 // get a question from the database
 function getQuestion()
@@ -105,9 +145,11 @@ function answer()
     if (questionAnswer.answer == answerInput.value) {
         feedbackDisplay.innerHTML = "Correct!";
         score += 1;
+        totalQuestions += 1;
     }
     else {
         feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.answer + ".";
+        totalQuestions += 1;
     }
 
     left -= 1;
@@ -127,6 +169,7 @@ function answer()
 // initialize everything
 function beginGame()
 {
+		totalQuestions = 0;
     score = 0;
     left = 5;
     time = 0;
@@ -155,6 +198,9 @@ function beginGame()
 // end the game and show results
 function endGame()
 {
+		date = getDate();
+		addScore();
+		
     // get time
     let time = new Date();
     let diff = (time - startTime) / 1000;
