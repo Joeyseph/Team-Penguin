@@ -17,6 +17,7 @@ function getQuestion(){
     		"questionID":questionID,	 
   			};
     var url = "user/getQuestion";
+    
   $.ajax({
    		type:"POST",
    		url:url,

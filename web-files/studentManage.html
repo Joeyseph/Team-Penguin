@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="teacherInterface.css" />
+    <title>Student Managementr</title>
+     
+  </head>
+  <body>
+      <div class="container"> 
+      <form class="form">
+      <div>
+        <input
+          type="text"
+          id="classID"
+          placeholder="Enter the classID"
+          class="form-input"
+        />
+      </div>
+        </form>
+       <div> <button onclick="getStudents()"> Search </button></div>
+      </div>
+       
+       
+
+      <div class="container2"> 
+            
+        <div><span id = "studentList">?? </span></div>
+      </div>
+ 
+        <script type="text/javascript" src="JQuery.js" ></script>
+        <script src="studentManage.js"></script>
+  </body>
+</html>
