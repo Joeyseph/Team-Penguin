@@ -13,7 +13,49 @@ let feedbackDisplay;
 let goButton;
 let hasQuestion;
 let oldQuestions;
- 
+let date;
+
+// get the date
+function getDate(){
+	var year = new Date();
+	year.getFullYear();
+	
+  var month = new Date();
+	month.getMonth();
+	
+  var day = new Date();
+	day.getDate();
+	
+  var date = year + "-" + month + "-" + day;
+		return date
+}
+
+// save the score, total questions, and the date to the database
+function addScore() {
+var data = {
+		"score" :score,
+    "totalQuestions" :totalQuestions,
+    "date":date,
+};
+var url = "user/scores"
+
+$.ajax({
+	 type:"POST",
+        url:url,
+        async:false,
+        cache:false,
+        data:data,
+        dataType:"json",
+        success: function(data, textStatus, JqXHR){
+				},
+        
+			 error:function (XMLHttpRequest, textStatus, errorThrown) {
+            alert("XMLHttpRequest: "+XMLHttpRequest.status);
+            alert("textStatus: "+textStatus);
+            alert("errorThrown: "+errorThrown);
+        }
+	});
+}
 
 // get a question from the database
 function getQuestion()
@@ -36,7 +78,7 @@ function getQuestion()
         dataType:"json",
         success: function(data,textStaus,jqXHR){
             if( data.status == "success"){
-                dbQuestion = { questionId: data.questionId, questionType: data.questionType, questionBody: data.questionBody, answer: data.answer, number: data.number, place: data.place };
+                dbQuestion = { questionId: data.questionId, questionType: data.questionType, questionBody: data.questionBody, answer: data.answer, place: data.place };
                 hasQuestion = true;
             }
         },
@@ -58,19 +100,28 @@ function question()
     goButton.style.visibility = "visible";
     feedbackDisplay.style.visibility = "visible";
 
-    // get a question
-    questionAnswer = getQuestion();
-
-    // repeat until add/sub question is returned and it's a new question
-    while (!hasQuestion || oldQuestions.includes(questionAnswer.questionId)) {
+    // randomly choose type of question
+    if (Math.random() < 0.5) {
+        // add/subtract
         questionAnswer = getQuestion();
-    }
 
-    if (questionAnswer.questionType == "add.sub") {
+        // repeat until add/sub question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "add.sub" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
         questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
     }
     else {
-        questionDisplay.innerHTML = questionAnswer.number + " at the " + questionAnswer.place + "s place is ";
+        // places
+        questionAnswer = getQuestion();
+
+        // repeat until places question is returned and it's a new question
+        while (!hasQuestion || questionAnswer.questionType != "places" || oldQuestions.includes(questionAnswer.questionId)) {
+            questionAnswer = getQuestion();
+        }
+
+        questionDisplay.innerHTML = questionAnswer.questionBody + " at the " + questionAnswer.place + " place is ";
     }
 
     // add question index to old questions
@@ -95,10 +146,12 @@ function answer()
     if (questionAnswer.answer == answerInput.value) {
         feedbackDisplay.innerHTML = "Correct!";
         score += 1;
+        totalQuestions +=1;
     }
     else {
         feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.answer + ".";
         lives -= 1;
+        totalQuestions +=1;
     }
 
     answerInput.value = '';
@@ -116,6 +169,7 @@ function answer()
 // initialize everything
 function beginGame()
 {
+		totalQuestions = 0;
     score = 0;
     lives = 3;
     time = 0;
@@ -144,6 +198,9 @@ function beginGame()
 // end the game and show results
 function endGame()
 {
+		date = getDate();
+		addScore();
+		
     // get time
     let time = new Date();
     let diff = (time - startTime) / 1000;
