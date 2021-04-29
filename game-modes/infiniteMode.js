@@ -9,6 +9,8 @@ let scoreDisplay;
 let livesDisplay;
 let questionDisplay;
 let answerInput;
+let mcInput;
+let questionType;
 let feedbackDisplay;
 let goButton;
 let hasQuestion;
@@ -103,6 +105,7 @@ function question()
     // randomly choose type of question
     if (Math.random() < 0.5) {
         // add/subtract
+        questionType = "addsub";
         questionAnswer = getQuestion();
 
         // repeat until add/sub question is returned and it's a new question
@@ -111,9 +114,11 @@ function question()
         }
 
         questionDisplay.innerHTML = questionAnswer.questionBody + " = ";
+        answerInput.style.visibility = "visible";
     }
     else {
         // places
+        questionType = "places";
         questionAnswer = getQuestion();
 
         // repeat until places question is returned and it's a new question
@@ -121,14 +126,16 @@ function question()
             questionAnswer = getQuestion();
         }
 
-        questionDisplay.innerHTML = questionAnswer.questionBody + " at the " + questionAnswer.place + " place is ";
+        questionDisplay.innerHTML = "The " + questionAnswer.answer + " in " + questionAnswer.questionBody + " is at which place?";
+        for (let button of mcInput) {
+            button.style.visibility = "visible";
+        }
     }
 
     // add question index to old questions
     oldQuestions.push(questionAnswer.questionId);
 
     questionDisplay.style.visibility = "visible";
-    answerInput.style.visibility = "visible";
 }
 
 
@@ -143,18 +150,43 @@ function setDisplay()
 // check answer from user
 function answer()
 {
-    if (questionAnswer.answer == answerInput.value) {
-        feedbackDisplay.innerHTML = "Correct!";
-        score += 1;
-        totalQuestions +=1;
+    if (questionType == "addsub") {
+        if (questionAnswer.answer == answerInput.value) {
+            feedbackDisplay.innerHTML = "Correct!";
+            score += 1;
+        }
+        else {
+            feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.answer + ".";
+            lives -= 1;
+        }
+
+        answerInput.value = '';
+        answerInput.style.visibility = "hidden";
     }
     else {
-        feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.answer + ".";
-        lives -= 1;
-        totalQuestions +=1;
+        let selected;
+
+        for (let button of mcInput) {
+            if (button.checked) {
+                selected = button.value;
+                button.checked = false;
+                break;
+            }
+        }
+
+        if (selected == questionAnswer.place) {
+            feedbackDisplay.innerHTML = "Correct!";
+            score += 1;
+        }
+        else {
+            feedbackDisplay.innerHTML = "Sorry, the correct answer was " + questionAnswer.place + ".";
+            lives -= 1;
+        }
+
+        mcInput.style.visibility = "hidden";
     }
 
-    answerInput.value = '';
+    totalQuestions +=1;
     setDisplay();
 
     if (lives === 0) {
@@ -178,6 +210,7 @@ function beginGame()
     livesDisplay = document.getElementById("lives");
     questionDisplay = document.getElementById("question");
     answerInput = document.getElementById("answer");
+    mcInput = [ document.getElementById("onesChoice"), document.getElementById("tensChoice"), document.getElementById("hundredsChoice") ];
     feedbackDisplay = document.getElementById("feedback");
     goButton = document.getElementById("go");
 
